@@ -1,0 +1,4 @@
+// TODO: Encode a program that sums 5 through 1 in a loop.
+// TODO: Store the resulting 15 at data address 0x10.
+// TODO: Load the stored value back into R3.
+// TODO: Halt. Encoding the program is left as an exercise.
