@@ -11,7 +11,7 @@ The instruction split is eight versus seven because there are 15 core instructio
 | Area | Joaquin drives | Amanda drives |
 |---|---|---|
 | Instructions, including execute cases and tests | LDI, ADDI, SUB, ST, JMP, JNZ, AND, XOR | MOV, ADD, CMP, LD, JZ, HALT, OR |
-| ALU and flags | Subtraction, AND/XOR, combinational Z, saved Z | Addition, OR, signed V for addition/subtraction, saved V |
+| ALU and flags | Subtraction, AND/XOR, combinational Z, saved Z | Addition, OR, carry C for addition/subtraction, saved C |
 | Register file | Rising-edge write port and write qualification | Two combinational read ports and register observation in simulation |
 | Fetch and timing | PC, next-address selection, divide-by-four clock enable | Synchronous ROM, instruction capture, FSM transitions |
 | Data memory and output | RAM write path, address decode, output capture | Synchronous RAM read, LD writeback, decimal display driver |
@@ -26,7 +26,7 @@ Both people work in `alu.v`, `regfile.v`, `cpu.v`, the memories, testbenches, an
 
 - [ ] Document all 15 core instructions: LDI, MOV, LD, ST, ADD, ADDI, SUB, CMP, AND, OR, XOR, JMP, JZ, JNZ, and HALT. Reserve the remaining opcode for optional MUL.
 - [ ] Agree on unique four-bit opcode assignments, operands, destination, immediate/address meaning, and flag behavior. The spec does not assign numeric opcodes. Retain the existing 16-bit field layout unless both explicitly revise it: opcode [15:12], Rd [11:10], Rs [9:8], immediate/address [7:0]. The 8-bit PC addresses instruction words.
-- [ ] Use ADD, ADDI, SUB, and CMP to update saved Z and V. ADDI must update Z for the counter's immediate JZ. As a documented project choice, preserve flags for the other core instructions; the spec does not fully define their flag behavior. CMP must preserve both operands.
+- [ ] Use ADD, ADDI, SUB, and CMP to update saved Z and C (C replaced the proposal's V; see README). ADDI must update Z for the counter's immediate JZ. As a documented project choice, preserve flags for the other core instructions; the spec does not fully define their flag behavior. CMP must preserve both operands.
 - [ ] Agree on internal signal names, a sufficiently wide ALU operation selector (three bits supports the planned operations), and a store interface carrying address, data, and a one-cycle write strobe to a separate output module.
 - [ ] Plan `rtl/output_port.v` for the output register and `rtl/sevenseg.v` for decimal conversion and digit scanning. Add display ports to `basys3_top.v` and corresponding constraint TODOs. LEDs will show the output register, not R3; R3 may remain a debug signal.
 - [ ] Specify reset behavior and reserved-I/O read/write behavior. Suggested choices: clear the output register on reset, ignore writes to unimplemented I/O addresses, and return zero for unimplemented I/O reads. Label these as design choices, not requirements from the spec.
@@ -34,14 +34,14 @@ Both people work in `alu.v`, `regfile.v`, `cpu.v`, the memories, testbenches, an
 
 **Done when:** both can decode a 16-bit instruction and explain the complete memory map and output interface. Preserve existing smoke/demo files as earlier exercises; they are not the required final demos.
 
-### Task 2. Build and test the ALU — Joaquin: subtraction and logic; Amanda: addition and overflow
+### Task 2. Build and test the ALU — Joaquin: subtraction and logic; Amanda: addition and carry
 
 - [ ] Joaquin implements subtraction, AND, XOR, and zero detection from the selected eight-bit result.
-- [ ] Amanda implements addition, OR, and signed overflow for both addition and subtraction. ADDI reuses addition; CMP reuses subtraction.
+- [ ] Amanda implements addition, OR, and carry (borrow for subtraction) for both addition and subtraction. ADDI reuses addition; CMP reuses subtraction.
 - [ ] Agree on default outputs and combinational assignments that avoid latches. Keep the implementation in Verilog-2001.
-- [ ] Both extend `alu_tb.v` with self-checking cases: ordinary arithmetic, each logic operation, `5 - 5 = 0` with Z=1, `255 + 1 = 0` with Z=1/V=0, `127 + 1 = 128` with V=1, and signed `-128 - 1` with V=1.
+- [ ] Both extend `alu_tb.v` with self-checking cases: ordinary arithmetic, each logic operation, `5 - 5 = 0` with Z=1, `255 + 1 = 0` with Z=1/C=1, `127 + 1 = 128` with C=0, and `3 - 5 = 254` with C=1 (borrow).
 
-**Cross-review:** Joaquin explains addition overflow; Amanda explains subtraction and zero detection. Calculating ALU flags here is separate from saving CPU flags in Task 6.
+**Cross-review:** Joaquin explains addition carry; Amanda explains subtraction and zero detection. Calculating ALU flags here is separate from saving CPU flags in Task 6.
 
 ### Task 3. Build the register file — Joaquin: writes; Amanda: reads
 
@@ -76,10 +76,10 @@ Both people work in `alu.v`, `regfile.v`, `cpu.v`, the memories, testbenches, an
 ### Task 6. Integrate arithmetic, logic, and saved flags — Both
 
 - [ ] Joaquin implements SUB, ADDI, AND, and XOR execute cases and the saved Z register.
-- [ ] Amanda implements ADD, CMP, and OR execute cases and the saved V register.
+- [ ] Amanda implements ADD, CMP, and OR execute cases and the saved C register.
 - [ ] Agree on a shared flags-write condition for ADD, ADDI, SUB, and CMP. Prevent CMP register writes and preserve flags for instructions designated not to update them.
 - [ ] Each owner tests their instructions through fetch, execute, and writeback. Check results in registers, not just at ALU outputs.
-- [ ] Cross-test equal-operand CMP without either operand changing, ADDI wraparound setting Z, and arithmetic overflow reaching saved V. Check flag preservation across MOV, LDI, and stores.
+- [ ] Cross-test equal-operand CMP without either operand changing, ADDI wraparound setting Z, and an arithmetic carry reaching saved C. Check flag preservation across MOV, LDI, and stores.
 
 **Done when:** both distinguish combinational flags from saved flags and can trace an ADD from fetch through its single register writeback.
 
@@ -155,4 +155,4 @@ Both people work in `alu.v`, `regfile.v`, `cpu.v`, the memories, testbenches, an
 
 ### Optional Task 13. Add MUL only after the required project passes
 
-Amanda implements the ALU multiplication operation; Joaquin integrates the reserved opcode and writeback. Swap testing roles. Agree explicitly on low-eight-bit result and flag behavior before implementation; the spec does not define MUL semantics. Test `3 * 4 = 12` and `20 * 20 = 400`, whose low byte is 144. If MUL updates Z but preserves V, use separate flag write enables. Rerun the core regression and both demos after the extension.
+Amanda implements the ALU multiplication operation; Joaquin integrates the reserved opcode and writeback. Swap testing roles. Agree explicitly on low-eight-bit result and flag behavior before implementation; the spec does not define MUL semantics. Test `3 * 4 = 12` and `20 * 20 = 400`, whose low byte is 144. If MUL updates Z but preserves C, use separate flag write enables. Rerun the core regression and both demos after the extension.

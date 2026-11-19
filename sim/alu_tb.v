@@ -1,9 +1,10 @@
-// ALU simulation scaffold for arithmetic results and zero/overflow flags.
+// ALU simulation scaffold for results and zero/carry flags (see README "Flags").
 module alu_tb;
     // TODO: Declare stimulus and result signals and instantiate alu.
-    // TODO: Test normal addition and subtraction with expected results and flags.
-    // TODO: Test subtraction to zero: 5 - 5 = 0 with Z=1.
-    // TODO: Test 8-bit wraparound: 0xFF + 1 = 0 with Z=1 and V=0.
-    // TODO: Test signed overflow: 127 + 1 = 0x80 with V=1.
-    // TODO: Include subtraction overflow cases, report mismatches, and finish simulation.
+    // TODO: Test each operation: ADD, SUB, AND, OR, XOR, and PASS (result = b).
+    // TODO: Test subtraction to zero: 5 - 5 = 0 with Z=1, C=0.
+    // TODO: Test 8-bit wraparound: 255 + 1 = 0 with Z=1 and C=1.
+    // TODO: Test no carry: 127 + 1 = 128 with Z=0 and C=0.
+    // TODO: Test borrow: 3 - 5 = 254 and 0 - 1 = 255, both with C=1; 5 - 3 = 2 with C=0.
+    // TODO: Report mismatches and finish simulation.
 endmodule

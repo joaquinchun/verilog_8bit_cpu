@@ -7,6 +7,6 @@ module program_rom #(
     output wire [15:0] instruction
 );
     // TODO: Declare a 256-word, 16-bit ROM array.
-    // TODO: Initialize the ROM array with $readmemh using MEM_FILE.
+    // TODO: Initialize the ROM array with $readmemb using MEM_FILE (one 16-bit binary word per line).
     // TODO: Register the addressed word on the rising edge of clk for block ROM inference.
 endmodule
