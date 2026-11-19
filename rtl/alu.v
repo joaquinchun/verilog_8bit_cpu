@@ -4,9 +4,15 @@ module alu (
     input  wire [7:0] a,
     input  wire [7:0] b,
     input  wire [2:0] alu_op,
+<<<<<<< HEAD
     output wire [7:0] result,
     output wire       zero,
     output wire       carry
+=======
+    output reg [7:0]  result,
+    output reg        zero,
+    output reg        carry
+>>>>>>> bb53e6b (adding ALU_SUB and chaning output to reg from wire)
 );
     // Planned internal ALU control codes (decoded from CPU instruction opcodes):
     //   3'b000  ALU_ADD  (ADD, ADDI)
@@ -24,10 +30,19 @@ module alu (
         result = 8'b00000000;
         zero = 1'b0;
         carry = 1'b0;
+<<<<<<< HEAD
+=======
+        // Carry bit follows x86. C = 1 when a borrow occured
+>>>>>>> bb53e6b (adding ALU_SUB and chaning output to reg from wire)
 
         case (alu_op)
+            ALU_SUB: begin
+                result = a - b;
+                carry = (a < b);
+            end
             default: begin end
         endcase
+        zero = (result == 8'b00000000);
     end
     // TODO: Define named constants for all of these codes.
     // TODO: Implement ADD, SUB, AND, OR, XOR, and PASS with an 8-bit result.
